@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Car Racing</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <style type="text/css">
+        body {
+            margin: 0px;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+
+<script src="js/three.min.js"></script>
+<script src="js/ColladaLoader.js"></script>
+
+<script>
+    /* GLOBAL VARIABLES */
+    var camera;
+    var scene;
+    var renderer;
+    var geometry;
+    var material;
+    var mesh;
+    var car;
+    var skin;
+
+    var loader = new THREE.ColladaLoader();
+    loader.options.convertUpAxis = true;
+    loader.load('./car.dae', function(collada) {
+
+        car = collada.scene;
+        skin = collada.skins[0];
+
+        car.scale.x = car.scale.y = car.scale.z = 2;
+        car.updateMatrix();
+
+        init();
+        render();
+    });
+
+    function init() {
+        scene = new THREE.Scene();
+
+        addCamera();
+
+        addFloor();
+
+        addSkyBox();
+
+        addLight();
+
+        addBuildings();
+
+        scene.add(car);
+
+        renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        document.body.appendChild(renderer.domElement);
+    }
+
+    function addCamera() {
+        camera = new THREE.PerspectiveCamera(45, window.innerWidth
+                / window.innerHeight, 1, 100000);
+        camera.position.y = 5000;
+        camera.position.z = -5000;
+        camera.lookAt(new THREE.Vector3(0, 0, 0));
+    }
+
+    function addLight() {
+        pointLight = new THREE.PointLight(0xffffff);
+        pointLight.position = new THREE.Vector3(0, 10000, 0);
+        scene.add(pointLight);
+    }
+
+    function addFloor() {
+        var floorTexture = new THREE.ImageUtils.loadTexture( 'images/wet-sand.jpg' );
+        floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping;
+        floorTexture.repeat.set( 10, 10 );
+        var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture, side: THREE.DoubleSide } );
+        var floorGeometry = new THREE.PlaneGeometry(100000, 100000, 100, 100);
+        var floor = new THREE.Mesh(floorGeometry, floorMaterial);
+        floor.position.y = -0.5;
+        floor.rotation.x = Math.PI / 2;
+        scene.add(floor);
+    }
+
+    function addSkyBox() {
+        var imagePrefix = "images/skyX55";
+        var directions  = ["+x", "-x", "+y", "-y", "+z", "-z"];
+        var imageSuffix = ".png";
+        var skyGeometry = new THREE.CubeGeometry( 100000, 100000, 100000 );
+
+        var materialArray = [];
+        for (var i = 0; i < 6; i++)
+            materialArray.push( new THREE.MeshBasicMaterial({
+                map: THREE.ImageUtils.loadTexture( imagePrefix + directions[i] + imageSuffix ),
+                side: THREE.BackSide
+            }));
+        var skyMaterial = new THREE.MeshFaceMaterial( materialArray );
+        var skyBox = new THREE.Mesh( skyGeometry, skyMaterial );
+        scene.add( skyBox );
+    }
+
+    function addBuildings() {
+        var geometry = new THREE.CubeGeometry( 1000, 2000, 1000);
+        var material = new THREE.MeshPhongMaterial( { map: THREE.ImageUtils.loadTexture('images/crate.jpg') } );
+        mesh = new THREE.Mesh(geometry, material );
+        mesh.position.z = 7000;
+        mesh.position.y = 2000;
+        mesh.position.x = 1000;
+        scene.add( mesh );
+    }
+
+    function render() {
+        requestAnimationFrame(render);
+
+        if (keyDown[38]) {
+            if (speed < 100) speed += 0.5;
+        } else {
+            speed -= 1;
+            if (speed < 0) speed = 0;
+        }
+        if (speed > 0) {
+            if (keyDown[37]) car.rotation.y += 0.05;
+            if (keyDown[39]) car.rotation.y -= 0.05;
+        }
+
+        car.position.x += speed * Math.sin(car.rotation.y);
+        car.position.z += speed * Math.cos(car.rotation.y);
+
+        camera.lookAt(car.position);
+
+        renderer.render(scene, camera);
+    }
+
+    speed = 0;
+    keyDown = new Array();
+    for (i = 0; i < 300; i++) {
+        keyDown[i] = false;
+    }
+
+    document.onkeydown = function(event) {
+        keyDown[event.keyCode] = true;
+    }
+
+    document.onkeyup = function(event) {
+        keyDown[event.keyCode] = false;
+    }
+</script>
+</body>
+</html>

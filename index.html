@@ -77,7 +77,7 @@
     }
 
     function addFloor() {
-        var floorTexture = new THREE.ImageUtils.loadTexture( 'images/wet-sand.jpg' );
+        var floorTexture = new THREE.ImageUtils.loadTexture( 'images/sand.jpg' );
         floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping;
         floorTexture.repeat.set( 10, 10 );
         var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture, side: THREE.DoubleSide } );
@@ -89,7 +89,7 @@
     }
 
     function addSkyBox() {
-        var imagePrefix = "images/skyX55";
+        var imagePrefix = "images/sky";
         var directions  = ["+x", "-x", "+y", "-y", "+z", "-z"];
         var imageSuffix = ".png";
         var skyGeometry = new THREE.CubeGeometry( 100000, 100000, 100000 );
@@ -108,11 +108,21 @@
     function addBuildings() {
         var geometry = new THREE.CubeGeometry( 1000, 2000, 1000);
         var material = new THREE.MeshPhongMaterial( { map: THREE.ImageUtils.loadTexture('images/crate.jpg') } );
-        mesh = new THREE.Mesh(geometry, material );
-        mesh.position.z = 7000;
-        mesh.position.y = 2000;
-        mesh.position.x = 1000;
-        scene.add( mesh );
+
+        var moveZ = 5000;
+        var moveY = 1000;
+        var moveX = 1000;
+        for (var i=0; i<5; i++) {
+            var building = new THREE.Mesh(geometry, material);
+            building.position.z = moveZ;
+            building.position.y = moveY;
+            building.position.x = moveX;
+
+            moveX += 1000;
+            moveY += 500;
+            moveZ += -100;
+            scene.add( building );
+        }
     }
 
     function render() {
